@@ -32,13 +32,24 @@ class ClientCareController extends AbstractController
 
     private function waitForOpenAiResponse($openaiClient, $text, $timeout = 30)
     {
+        $start_time = time();
+        $response = null;
 
+        while (time() - $start_time < $timeout) {
         $response = $openaiClient->completions()->create([
             'model' => $_ENV["MODEL"],
             'prompt' => $text,
             'max_tokens' => $this->MAX_TOKEN,
             'temperature' => 0,
             ]);
+            if (
+                isset($response['choices'][0]['text']) && isset($response["choices"])
+            ) {
+                break;
+            }
+
+            sleep(1);
+        }
 
 
         return $response;
