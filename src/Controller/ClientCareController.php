@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use OpenAI;
+use phpDocumentor\Reflection\Types\Self_;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,14 +26,14 @@ class ClientCareController extends AbstractController
     //Model 0 = chat (current)
     //Model 1 = translate
     //Model 3 = categorize emails
-    protected static $SUPPORTED_MODELS = ["ada:ft-exogroup-2023-05-19-09-46-59", "davinci:ft-exogroup-2023-05-18-17-52-05", "davinci:ft-exogroup:lol-troll-2023-05-17-14-27-42"];
+    protected static $SUPPORTED_MODELS = ["ada:ft-exogroup-2023-05-19-09-46-59", "text-davinci-003", "davinci:ft-exogroup:lol-troll-2023-05-17-14-27-42"];
 
     #[Route('/prompt', methods: ['POST'])]
     public function prompt(Request $request): Response
     {
         $params = json_decode($request->getContent(), true);
         $prompt = $params["prompt"] ?? null;
-        $model = isset($params["model"]) && is_numeric($params["model"]) ? $params["model"] : 0;
+        $model = isset($params["model"]) && in_array($params["model"], self::$SUPPORTED_MODELS) ? $params["model"] : self::$SUPPORTED_MODELS[0];
 
         $client = OpenAI::client($_ENV["API_KEY"]);
 
@@ -59,7 +60,7 @@ class ClientCareController extends AbstractController
 
         while (time() - $start_time < $timeout) {
         $response = $openaiClient->completions()->create([
-            'model' => self::$SUPPORTED_MODELS[$model],
+            'model' =>$model,
             'prompt' =>
                 self::$AGENT_DESCRIPTION .
                 self::$PROMPT_CLIENT_PREFIX.": ".$text. self::$PROMPT_MESSAGE_SEPARATOR . self::$PROMPT_AGENT_PREFIX.":",
