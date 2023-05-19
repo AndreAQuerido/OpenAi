@@ -12,9 +12,15 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ClientCareController extends AbstractController
 {
-    protected $MAX_TOKEN = 100;
+    protected static $MAX_TOKEN = 100;
 
+    protected static $AGENT_DESCRIPTION = "I want you to act as a Client Care Specialist from ExoClick, a digital marketing company that provides online advertising services to both advertisers and publishers all over the world. You will receive questions from Publishers regarding Fluid Player, and I want you to provide responses to client inquiries in a formal but friendly manner, adapting your communication style to the client's style and showing empathy at all times. Your replies should be clear and concise, while also avoiding the use of too-technical terminology and always matching the client's language.";
 
+    protected static $PROMPT_CLIENT_PREFIX = "Client";
+
+    protected static $PROMPT_MESSAGE_SEPARATOR = "\n###\n";
+
+    protected static $PROMPT_AGENT_PREFIX = "Agent";
     #[Route('/prompt', methods: ['POST'])]
     public function prompt(Request $request): Response
     {
@@ -38,8 +44,10 @@ class ClientCareController extends AbstractController
         while (time() - $start_time < $timeout) {
         $response = $openaiClient->completions()->create([
             'model' => $_ENV["MODEL"],
-            'prompt' => $text,
-            'max_tokens' => $this->MAX_TOKEN,
+            'prompt' =>
+                self::$AGENT_DESCRIPTION .
+                self::$PROMPT_CLIENT_PREFIX.": ".$text. self::$PROMPT_MESSAGE_SEPARATOR . self::$PROMPT_AGENT_PREFIX.":",
+            'max_tokens' => self::$MAX_TOKEN,
             'temperature' => 0,
             ]);
             if (
