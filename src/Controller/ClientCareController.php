@@ -42,8 +42,7 @@ class ClientCareController extends AbstractController
             if (
                 isset($result['choices'][0]['text']) && isset($result["choices"])
             ){
-                $string = trim(preg_replace('/\s\s+/', ' ', $result['choices'][0]['text']));
-                $string = preg_replace('/[^a-zA-Z0-9_ %\[\]\.\(\)%&-]/s', '', $string);
+                $string =  $result['choices'][0]['text'];
                 return new JsonResponse(["prompt" => $prompt, "response"=> $string]);
             }
             else {
@@ -66,7 +65,7 @@ class ClientCareController extends AbstractController
                 self::$PROMPT_CLIENT_PREFIX.": ".$text. self::$PROMPT_MESSAGE_SEPARATOR . self::$PROMPT_AGENT_PREFIX.":",
             'max_tokens' => self::$MAX_TOKEN,
             'temperature' => 0,
-            "stop"=> ["END"]
+            "stop"=> ["END","###"]
             ]);
             if (
                 isset($response['choices'][0]['text']) && isset($response["choices"])
